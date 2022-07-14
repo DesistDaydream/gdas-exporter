@@ -97,6 +97,19 @@ type Rfid struct {
 	DamName  string   `json:"damName"`
 }
 
+// 全局存储空间信息
+type Totalspace struct {
+	Result              string `json:"result"`
+	TotalSpaceRaid0     int64  `json:"totalSpaceRaid0"`
+	TotalSpace          int64  `json:"totalSpace"`
+	TotalAvailableSpace int64  `json:"totalAvailableSpace"`
+	TotalMgzCount       int    `json:"totalMgzCount"`
+	UsedMgzCount        int    `json:"usedMgzCount"`
+	FreeMgzCount        int    `json:"freeMgzCount"`
+	ExceptionMgzCount   int    `json:"exceptionMgzCount"`
+	TotalSlotCount      int    `json:"totalSlotCount"`
+}
+
 type Users struct {
 	Result   string     `json:"result"`
 	ResCount int        `json:"res_count"`

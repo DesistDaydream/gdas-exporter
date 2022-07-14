@@ -25,3 +25,17 @@ func (n *MagazinesService) GetMagazines() (*core.Magazines, error) {
 
 	return &data, nil
 }
+
+// 获取全局存储空间信息
+func (n *MagazinesService) GetTotalspace() (*core.Totalspace, error) {
+	var data core.Totalspace
+	endpoint := "totalspace"
+	_, err := n.client.RequestObj(endpoint, &data, &core.RequestOptions{
+		Method: "GET",
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	return &data, nil
+}

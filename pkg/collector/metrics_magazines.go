@@ -37,16 +37,14 @@ var (
 // ScrapeMagazines 是将要实现 Scraper 接口的一个 Metric 结构体
 type ScrapeMagazines struct{}
 
-// Name 指定自己定义的 抓取器 的名字，与 Metric 的名字不是一个概念，但是一般保持一致
-// 该方法用于为 ScrapeMagazines 结构体实现 Scraper 接口
+// Name is
 func (ScrapeMagazines) Name() string {
-	return "gdas_magazines_info"
+	return "gdas_magazines_status"
 }
 
-// Help 指定自己定义的 抓取器 的帮助信息，这里的 Help 的内容将会作为命令行标志的帮助信息。与 Metric 的 Help 不是一个概念。
-// 该方法用于为 ScrapeMagazines 结构体实现 Scraper 接口
+// Help is
 func (ScrapeMagazines) Help() string {
-	return "Gdas Magazines Info"
+	return "Gdas Magazines Status.0-normal,3-copying,4-non-system,9-anormal"
 }
 
 // Scrape 从客户端采集数据，并将其作为 Metric 通过 channel(通道) 发送。主要就是采集 Gdas 集群信息的具体行为。
