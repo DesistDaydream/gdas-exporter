@@ -71,8 +71,6 @@ func (c *Client) request(endpoint string, options *RequestOptions) ([]byte, erro
 	req.Header.Set("signature", signatureSha)
 	req.Header.Set("Referer", fmt.Sprintf("%v/gdas", c.Prefix))
 
-	fmt.Println(req.Header)
-
 	// requestDump, err := httputil.DumpRequest(req, true)
 	// if err != nil {
 	// 	fmt.Println(err)
