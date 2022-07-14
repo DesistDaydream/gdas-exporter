@@ -7,20 +7,8 @@ import (
 )
 
 func main() {
-
-	// sClient := services.NewLoginService(client)
-
-	// login, err := sClient.PostLogin(&core.PostLogin{
-	// 	Username: "system",
-	// 	Password: "HLgd@S123",
-	// })
-	// if err != nil {
-	// 	panic(err)
-	// }
-
-	// client.Token = login.Token
-
-	token, err := gdassdk.GetToken("https://172.38.30.192:8003", "system", "HLgd@S123")
+	password := "XXXXXXXX"
+	token, err := gdassdk.GetToken("https://172.38.30.192:8003", "system", password)
 	if err != nil {
 		panic(err)
 	}

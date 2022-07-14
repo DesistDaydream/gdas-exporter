@@ -65,11 +65,13 @@ func (c *Client) request(endpoint string, options *RequestOptions) ([]byte, erro
 		return nil, err
 	}
 	req.Header.Set("Content-type", "application/json")
-	req.Header.Add("X-Auth-Token", c.Token)
-	req.Header.Set("Referer", fmt.Sprintf("%v/gdas", c.Prefix))
+	req.Header.Add("token", c.Token)
 	req.Header.Set("stime", fmt.Sprintf("%v", time.Now().UnixNano()/1e6))
 	req.Header.Set("nonce", randString)
 	req.Header.Set("signature", signatureSha)
+	req.Header.Set("Referer", fmt.Sprintf("%v/gdas", c.Prefix))
+
+	fmt.Println(req.Header)
 
 	// requestDump, err := httputil.DumpRequest(req, true)
 	// if err != nil {
@@ -125,7 +127,6 @@ func (c *Client) RequestObj(endpoint string, container interface{}, options *Req
 
 // 生成签名所需数据
 func GenerateSign(token string) (string, string) {
-
 	// 毫秒时间戳
 	stime := strconv.FormatInt(time.Now().UnixNano()/1e6, 10)
 	// 随机数
