@@ -1,8 +1,6 @@
 package collector
 
 import (
-	"encoding/json"
-
 	"github.com/DesistDaydream/prometheus-instrumenting/pkg/scraper"
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/sirupsen/logrus"
@@ -38,21 +36,12 @@ func (ScrapeNodeList) Help() string {
 // Scrape 从客户端采集数据，并将其作为 Metric 通过 channel(通道) 发送。主要就是采集 Gdas 集群信息的具体行为。
 // 该方法用于为 ScrapeNodeList 结构体实现 Scraper 接口
 func (ScrapeNodeList) Scrape(client scraper.CommonClient, ch chan<- prometheus.Metric) (err error) {
-	// 声明需要绑定的 响应体 与 结构体
-	var (
-		respBody []byte
-		data     NodeListsData
-	)
+	// 让 client 变为 GdasClient 的实例
+	gdasClient := client.(*GdasClient)
 
-	// 根据 URI 获取 Response Body
-	url := "/v1/nodeList"
-	if respBody, err = client.Request("GET", url, nil); err != nil {
-		return err
-	}
-
-	// 绑定 Body 与 struct
-	if err = json.Unmarshal(respBody, &data); err != nil {
-		return err
+	data, err := gdasClient.Services.Node.GetNode()
+	if err != nil {
+		logrus.Errorf("获取节点列表失败:%v", err)
 	}
 
 	logrus.Debugf("当前共有 %v 个节点", len(data.NodeList))

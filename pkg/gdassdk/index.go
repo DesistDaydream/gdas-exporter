@@ -88,20 +88,22 @@ func GetToken(prefix string, username, password string) (string, error) {
 	return login.Token, nil
 }
 
-// Service encapsulate authenticated token
-type Service struct {
+// Services encapsulate authenticated token
+type Services struct {
 	Client *core.Client
 	Node   *services.NodeService
+	Auth   *services.AuthService
 }
 
-// NewService create Client for external use
-func NewService(prefix string, token string) *Service {
-	s := new(Service)
-	s.Init(prefix, token)
+// NewServices create Client for external use
+func NewServices(prefix string, token string, timeout time.Duration) *Services {
+	s := new(Services)
+	s.Init(prefix, token, timeout)
 	return s
 }
 
-func (s *Service) Init(prefix string, token string) {
-	s.Client = core.NewClient(prefix, token)
+func (s *Services) Init(prefix string, token string, timeout time.Duration) {
+	s.Client = core.NewClient(prefix, token, timeout)
 	s.Node = services.NewNodeService(s.Client)
+	s.Auth = services.NewAuthService(s.Client)
 }

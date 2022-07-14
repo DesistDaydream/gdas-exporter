@@ -16,8 +16,9 @@ import (
 )
 
 type Client struct {
-	Prefix string
-	Token  string
+	Prefix  string
+	Token   string
+	timeout time.Duration
 }
 
 type RequestOptions struct {
@@ -25,16 +26,16 @@ type RequestOptions struct {
 	Data   map[string]string
 }
 
-func NewClient(prefix string, token string) *Client {
+func NewClient(prefix string, token string, timeout time.Duration) *Client {
 	return &Client{
-		Prefix: prefix,
-		Token:  token,
+		Prefix:  prefix,
+		Token:   token,
+		timeout: timeout,
 	}
 }
 
 func (c *Client) request(endpoint string, options *RequestOptions) ([]byte, error) {
 	url := fmt.Sprintf("%s/v1/%s", c.Prefix, endpoint)
-	timeout := time.Duration(10 * time.Second)
 
 	method := options.Method
 	if len(method) == 0 {
@@ -83,7 +84,7 @@ func (c *Client) request(endpoint string, options *RequestOptions) ([]byte, erro
 	}
 
 	client := &http.Client{
-		Timeout:   timeout,
+		Timeout:   c.timeout,
 		Transport: transport,
 	}
 	resp, err := client.Do(req)

@@ -12,3 +12,11 @@ type NodeListData struct {
 	Status  float64 `json:"status"`
 	DamName string  `json:"damName"`
 }
+
+type Authorize struct {
+	Result               string `json:"result"`
+	RegisterTimeMillis   string `json:"registerTimeMillis"`
+	RegisterDays         string `json:"registerDays"`
+	RegisterSerialnumber string `json:"registerSerialnumber "`
+	RegisterMgzCount     string `json:"registerMgzCount"`
+}

@@ -2,26 +2,27 @@ package main
 
 import (
 	"fmt"
+	"time"
 
 	"github.com/DesistDaydream/gdas-exporter/pkg/gdassdk"
 )
 
 func main() {
-	password := "XXXXXXXX"
+	password := "XXXXXX"
 	token, err := gdassdk.GetToken("https://172.38.30.192:8003", "system", password)
 	if err != nil {
 		panic(err)
 	}
 	fmt.Println(token)
 
-	s := gdassdk.NewService("https://172.38.30.192:8003", token)
+	client := gdassdk.NewServices("https://172.38.30.192:8003", token, time.Second*10)
 
-	fmt.Println(s.Client.Token)
+	fmt.Println(client.Client.Token)
 
-	nodes, err := s.Node.GetNode()
+	auth, err := client.Auth.GetAuthorize()
 	if err != nil {
 		panic(err)
 	}
 
-	fmt.Println(nodes)
+	fmt.Println(auth)
 }
