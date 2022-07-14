@@ -3,8 +3,6 @@ module github.com/DesistDaydream/gdas-exporter
 go 1.18
 
 require (
-	github.com/DesistDaydream/prometheus-instrumenting v1.1.0
-	github.com/bitly/go-simplejson v0.5.0
 	github.com/coreos/go-systemd v0.0.0-20191104093116-d3cd4ed1dbcf
 	github.com/prometheus/client_golang v1.12.2
 	github.com/sirupsen/logrus v1.8.1

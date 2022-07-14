@@ -1,25 +1,12 @@
-package collector
+package gdasclient
 
 import (
-	"io"
 	"time"
 
 	"github.com/DesistDaydream/gdas-exporter/pkg/gdassdk"
 	"github.com/sirupsen/logrus"
 	"github.com/spf13/pflag"
 )
-
-// 这三个常量用于给每个 Metrics 名字添加前缀
-const (
-	name      = "gdas_exporter"
-	Namespace = "gdas"
-	//Subsystem(s).
-)
-
-// Name 用于给前端页面显示 const 常量中定义的内容
-func Name() string {
-	return name
-}
 
 // GdasClient 连接 Gdas 所需信息
 type GdasClient struct {
@@ -40,11 +27,6 @@ func NewGdasClient(opts *GdasOpts) *GdasClient {
 		Opts:     opts,
 		Services: services,
 	}
-}
-
-// Request 建立与 Gdas 的连接，并返回 Response Body
-func (c *GdasClient) Request(method string, endpoint string, reqBody io.Reader) (body []byte, err error) {
-	return body, nil
 }
 
 // Ping 在 Scraper 接口的实现方法 scrape() 中调用。

@@ -1,16 +1,17 @@
 package collector
 
 import (
-	"encoding/json"
 	"strconv"
 
-	"github.com/DesistDaydream/prometheus-instrumenting/pkg/scraper"
+	"github.com/DesistDaydream/gdas-exporter/pkg/gdasclient"
+	"github.com/DesistDaydream/gdas-exporter/pkg/scraper"
 	"github.com/prometheus/client_golang/prometheus"
+	"github.com/sirupsen/logrus"
 )
 
 var (
 	// check interface
-	_ scraper.CommonScraper = ScrapeMagazines{}
+	_ scraper.Scraper = ScrapeMagazines{}
 
 	// 盘匣状态
 	MagazinesStatus = prometheus.NewDesc(
@@ -49,22 +50,10 @@ func (ScrapeMagazines) Help() string {
 
 // Scrape 从客户端采集数据，并将其作为 Metric 通过 channel(通道) 发送。主要就是采集 Gdas 集群信息的具体行为。
 // 该方法用于为 ScrapeMagazines 结构体实现 Scraper 接口
-func (ScrapeMagazines) Scrape(client scraper.CommonClient, ch chan<- prometheus.Metric) (err error) {
-	// 声明需要绑定的 响应体 与 结构体
-	var (
-		respBody  []byte
-		magazines Magazines
-	)
-
-	// 根据 URI 获取 Response Body
-	url := "/v1/magazines"
-	if respBody, err = client.Request("GET", url, nil); err != nil {
-		return err
-	}
-
-	// 绑定 Body 与 struct
-	if err = json.Unmarshal(respBody, &magazines); err != nil {
-		return err
+func (ScrapeMagazines) Scrape(client *gdasclient.GdasClient, ch chan<- prometheus.Metric) (err error) {
+	magazines, err := client.Services.Magazines.GetMagazines()
+	if err != nil {
+		logrus.Errorf("获取盘匣列表失败:%v", err)
 	}
 
 	for i := 0; i < len(magazines.Rfid); i++ {
@@ -100,28 +89,4 @@ func (ScrapeMagazines) Scrape(client scraper.CommonClient, ch chan<- prometheus.
 		)
 	}
 	return nil
-}
-
-// Magazines is
-type Magazines struct {
-	Result string `json:"result"`
-	Rfid   []Rfid `json:"rfid"`
-}
-
-// Rfid is
-type Rfid struct {
-	Rfid     string   `json:"rfid"`
-	Barcode  string   `json:"barcode"`
-	DaName   string   `json:"daName"`
-	PoolName string   `json:"poolName"`
-	Full     int      `json:"full"`
-	Format   int      `json:"format"`
-	RfidSts  int      `json:"rfidSts"`
-	Status   int      `json:"status"`
-	SlotNo   int      `json:"slotNo"`
-	DaNo     int      `json:"daNo"`
-	CpGroup  []string `json:"cpGroup"`
-	Offline  int      `json:"offline"`
-	ServerIP string   `json:"serverIp"`
-	DamName  string   `json:"damName"`
 }

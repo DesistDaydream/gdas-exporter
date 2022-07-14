@@ -6,8 +6,9 @@ import (
 	"runtime"
 
 	"github.com/DesistDaydream/gdas-exporter/pkg/collector"
+	"github.com/DesistDaydream/gdas-exporter/pkg/gdasclient"
 	"github.com/DesistDaydream/gdas-exporter/pkg/logging"
-	"github.com/DesistDaydream/prometheus-instrumenting/pkg/scraper"
+	"github.com/DesistDaydream/gdas-exporter/pkg/scraper"
 	"github.com/coreos/go-systemd/daemon"
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
@@ -18,7 +19,7 @@ import (
 // scrapers 列出了应该注册的所有 Scraper(抓取器)，以及默认情况下是否应该启用它们
 // 用一个 map 来定义这些抓取器是否开启，key 为 collector.Scraper 接口类型，value 为 bool 类型。
 // 凡是实现了 collector.Scraper 接口的结构体，都可以做作为该接口类型的值
-var scrapers = map[scraper.CommonScraper]bool{
+var scrapers = map[scraper.Scraper]bool{
 	collector.ScrapeMagazines{}: true,
 	collector.ScrapeNodeList{}:  true,
 }
@@ -34,7 +35,7 @@ func main() {
 	// ####################################
 	// ######## 设置命令行标志，开始 ########
 	// ####################################
-	listenAddress := pflag.String("web.listen-address", ":18443", "Address to listen on for web interface and telemetry.")
+	listenAddress := pflag.String("web.listen-address", ":8003", "Address to listen on for web interface and telemetry.")
 	metricsPath := pflag.String("web.telemetry-path", "/metrics", "Path under which to expose metrics.")
 
 	// 设置日志相关命令行标志
@@ -42,14 +43,14 @@ func main() {
 	logFlags.AddFlags()
 
 	// 设置关于抓取 Metric 目标客户端的一些信息的标志
-	opts := &collector.GdasOpts{}
+	opts := &gdasclient.GdasOpts{}
 	opts.AddFlag()
 
 	// scraperFlags 也是一个 map，并且 key 为 collector.Scraper 接口类型，这一小段代码主要有下面几个作用
 	// 1.生成抓取器的命令行标志，用于通过命令行控制开启哪些抓取器，说白了就是控制采集哪些指标
 	// 2.下面的 for 循环会通过命令行 flag 获取到的值，放到 scraperFlags 这个 map 中
 	// 3.然后在后面注册 Exporter 之前，先通过这个 map 中的键值对判断是否要把 value 为 true 的 抓取器 注册进去
-	scraperFlags := map[scraper.CommonScraper]*bool{}
+	scraperFlags := map[scraper.Scraper]*bool{}
 	for scraper, enabledByDefault := range scrapers {
 		defaultOn := false
 		if enabledByDefault {
@@ -75,7 +76,7 @@ func main() {
 	//
 	// 获取所有通过命令行标志，设置开启的 scrapers(抓取器)。
 	// 不包含默认开启的，默认开启的在代码中已经指定了。
-	enabledScrapers := []scraper.CommonScraper{}
+	enabledScrapers := []scraper.Scraper{}
 	for scraper, enabled := range scraperFlags {
 		if *enabled {
 			logrus.Info("Scraper enabled ", scraper.Name())
@@ -83,7 +84,7 @@ func main() {
 		}
 	}
 	// 实例化 Exporter，其中包括所有自定义的 Metrics
-	GdasClient := collector.NewGdasClient(opts)
+	GdasClient := gdasclient.NewGdasClient(opts)
 	exporter := scraper.NewExporter(GdasClient, enabledScrapers)
 	// 实例化一个注册器,并使用这个注册器注册 exporter
 	reg := prometheus.NewRegistry()

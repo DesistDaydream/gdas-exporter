@@ -90,9 +90,10 @@ func GetToken(prefix string, username, password string) (string, error) {
 
 // Services encapsulate authenticated token
 type Services struct {
-	Client *core.Client
-	Node   *services.NodeService
-	Auth   *services.AuthService
+	Client    *core.Client
+	Node      *services.NodeService
+	Auth      *services.AuthService
+	Magazines *services.MagazinesService
 }
 
 // NewServices create Client for external use
@@ -106,4 +107,5 @@ func (s *Services) Init(prefix string, token string, timeout time.Duration) {
 	s.Client = core.NewClient(prefix, token, timeout)
 	s.Node = services.NewNodeService(s.Client)
 	s.Auth = services.NewAuthService(s.Client)
+	s.Magazines = services.NewMagazinesService(s.Client)
 }

@@ -2,18 +2,20 @@ package services
 
 import core "github.com/DesistDaydream/gdas-exporter/pkg/gdassdk/core/v1"
 
-type AuthService struct {
+type MagazinesService struct {
 	client *core.Client
 }
 
-func NewAuthService(client *core.Client) *AuthService {
-	return &AuthService{
+func NewMagazinesService(client *core.Client) *MagazinesService {
+	return &MagazinesService{
 		client: client,
 	}
 }
-func (n *AuthService) GetAuthorize() (*core.Authorize, error) {
-	var data core.Authorize
-	endpoint := "authorize"
+
+// 查询盘匣列表
+func (n *MagazinesService) GetMagazines() (*core.Magazines, error) {
+	var data core.Magazines
+	endpoint := "magazines"
 	_, err := n.client.RequestObj(endpoint, &data, &core.RequestOptions{
 		Method: "GET",
 	})

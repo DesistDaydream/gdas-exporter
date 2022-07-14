@@ -12,14 +12,14 @@ func NewNodeService(client *core.Client) *NodeService {
 	}
 }
 func (n *NodeService) GetNode() (*core.NodeList, error) {
-	var nodeList core.NodeList
+	var data core.NodeList
 	endpoint := "nodeList"
-	_, err := n.client.RequestObj(endpoint, &nodeList, &core.RequestOptions{
+	_, err := n.client.RequestObj(endpoint, &data, &core.RequestOptions{
 		Method: "GET",
 	})
 	if err != nil {
 		return nil, err
 	}
 
-	return &nodeList, nil
+	return &data, nil
 }
