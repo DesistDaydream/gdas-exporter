@@ -22,6 +22,7 @@ import (
 var scrapers = map[scraper.Scraper]bool{
 	collector.ScrapeMagazines{}: true,
 	collector.ScrapeNodeList{}:  true,
+	collector.ScrapeUser{}:      true,
 }
 
 // DumpStacks is

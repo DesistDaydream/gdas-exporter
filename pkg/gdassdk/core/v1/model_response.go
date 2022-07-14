@@ -42,3 +42,16 @@ type Rfid struct {
 	ServerIP string   `json:"serverIp"`
 	DamName  string   `json:"damName"`
 }
+
+type Users struct {
+	Result   string     `json:"result"`
+	ResCount int        `json:"res_count"`
+	UserList []UserList `json:"userList"`
+}
+type UserList struct {
+	UserName string `json:"userName"`
+	UserAuth int    `json:"userAuth"`
+	Ak       string `json:"ak"`
+	Sk       string `json:"sk"`
+	Active   bool   `json:"active,omitempty"`
+}

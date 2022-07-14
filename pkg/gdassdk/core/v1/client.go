@@ -13,6 +13,8 @@ import (
 	"net/http"
 	"strconv"
 	"time"
+
+	"github.com/sirupsen/logrus"
 )
 
 type Client struct {
@@ -22,8 +24,9 @@ type Client struct {
 }
 
 type RequestOptions struct {
-	Method string
-	Data   map[string]string
+	Method   string
+	Data     map[string]string
+	RawQuery string
 }
 
 func NewClient(prefix string, token string, timeout time.Duration) *Client {
@@ -71,6 +74,9 @@ func (c *Client) request(endpoint string, options *RequestOptions) ([]byte, erro
 	req.Header.Set("nonce", randString)
 	req.Header.Set("signature", signatureSha)
 	req.Header.Set("Referer", fmt.Sprintf("%v/gdas", c.Prefix))
+	req.URL.RawQuery = options.RawQuery
+
+	logrus.WithField("url", req.URL).Debug("URL检查")
 
 	// requestDump, err := httputil.DumpRequest(req, true)
 	// if err != nil {
