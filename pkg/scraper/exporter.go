@@ -105,7 +105,7 @@ func (e *Exporter) scrape(ch chan<- prometheus.Metric) {
 
 	// 检验目标服务器是否正常，每次执行 Collect 都会检查
 	// 然后为 UP 和 Error 这俩 Metrics 设置值。
-	if pong, err := e.client.Ping(); pong != true || err != nil {
+	if pong, err := e.client.Ping(); !pong || err != nil {
 		logrus.WithFields(logrus.Fields{"ping error": "健康检查失败"}).Error(err)
 		e.metrics.UP.Set(0)
 		e.metrics.Error.Set(1)
@@ -135,7 +135,10 @@ func (e *Exporter) scrape(ch chan<- prometheus.Metric) {
 			// 执行 Scrape 操作，也就是执行每个 Scraper 中的 Scrape() 方法，由于这些自定义的 Scraper 都实现了 Scraper 接口
 			// 所以 Scrape 这个调用，就是调用的当前循环体中，从 e.scrapers 数组中取到的值，也就是 collector.ScrapeCluster{} 这些结构体
 			if err := scraper.Scrape(e.client, ch); err != nil {
-				logrus.WithField("scraper", scraper.Name()).Error(err)
+				logrus.WithFields(logrus.Fields{
+					"scraper": scraper.Name(),
+					"error":   err,
+				}).Errorf("在通用抓取器中执行 Scrape 方法失败")
 				e.metrics.ScrapeErrors.WithLabelValues(label).Inc()
 				e.metrics.Error.Set(1)
 			}

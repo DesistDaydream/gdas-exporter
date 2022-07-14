@@ -1,6 +1,8 @@
 package collector
 
 import (
+	"fmt"
+
 	"github.com/DesistDaydream/gdas-exporter/pkg/gdasclient"
 	"github.com/DesistDaydream/gdas-exporter/pkg/scraper"
 	"github.com/prometheus/client_golang/prometheus"
@@ -40,6 +42,9 @@ func (ScrapeNodeList) Scrape(client *gdasclient.GdasClient, ch chan<- prometheus
 	data, err := client.Services.Node.GetNode()
 	if err != nil {
 		logrus.Errorf("获取节点列表失败:%v", err)
+		return err
+	} else if data == nil {
+		return fmt.Errorf("获取到的节点列表为空")
 	}
 
 	logrus.Debugf("当前共有 %v 个节点", len(data.NodeList))
