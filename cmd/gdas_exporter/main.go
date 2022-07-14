@@ -35,8 +35,8 @@ func main() {
 	// ####################################
 	// ######## 设置命令行标志，开始 ########
 	// ####################################
-	listenAddress := pflag.String("web.listen-address", ":8003", "Address to listen on for web interface and telemetry.")
-	metricsPath := pflag.String("web.telemetry-path", "/metrics", "Path under which to expose metrics.")
+	listenAddress := pflag.StringP("listen-address", "l", ":8003", "Address to listen on for web interface and telemetry.")
+	metricsPath := pflag.String("telemetry-path", "/metrics", "Path under which to expose metrics.")
 
 	// 设置日志相关命令行标志
 	logFlags := logging.LoggingFlags{}

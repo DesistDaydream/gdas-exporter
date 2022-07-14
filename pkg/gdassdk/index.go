@@ -61,6 +61,7 @@ func GetToken(prefix string, username, password string) (string, error) {
 	}
 
 	client := &http.Client{
+		Timeout:   10 * time.Second,
 		Transport: transport,
 	}
 	resp, err := client.Do(req)

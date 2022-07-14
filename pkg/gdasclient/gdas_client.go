@@ -18,7 +18,8 @@ type GdasClient struct {
 func NewGdasClient(opts *GdasOpts) *GdasClient {
 	token, err := gdassdk.GetToken(opts.URL, opts.Username, opts.Password)
 	if err != nil {
-		panic(err)
+		logrus.Errorf("获取 Token 失败，请检查目标设备是否正常")
+		// panic(err)
 	}
 
 	services := gdassdk.NewServices(opts.URL, token, opts.Timeout)
@@ -62,7 +63,7 @@ type GdasOpts struct {
 
 // AddFlag use after set Opts
 func (o *GdasOpts) AddFlag() {
-	pflag.StringVar(&o.URL, "gdas-server", "https://172.38.30.192:8003", "HTTP API address of a Gdas server or agent. (prefix with https:// to connect over HTTPS)")
+	pflag.StringVarP(&o.URL, "gdas-server", "s", "https://172.38.30.192:8003", "HTTP API address of a Gdas server or agent. (prefix with https:// to connect over HTTPS)")
 	pflag.StringVarP(&o.Username, "gdas-user", "u", "system", "gdas username")
 	pflag.StringVarP(&o.Password, "gdas-pass", "p", "", "gdas password")
 	pflag.IntVar(&o.Concurrency, "concurrent", 10, "Number of concurrent requests during collection.")
