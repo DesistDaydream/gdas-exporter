@@ -3,27 +3,34 @@ package main
 import (
 	"fmt"
 
-	core "github.com/DesistDaydream/gdas-exporter/pkg/gdassdk/core/v1"
-	"github.com/DesistDaydream/gdas-exporter/pkg/gdassdk/services"
+	"github.com/DesistDaydream/gdas-exporter/pkg/gdassdk"
 )
 
 func main() {
-	client := core.NewClient("https://172.38.30.192:8003")
-	sClient := services.NewLoginService(client)
 
-	login, err := sClient.PostLogin(&core.PostLogin{
-		Username: "system",
-		Password: "HLgd@S123",
-	})
+	// sClient := services.NewLoginService(client)
+
+	// login, err := sClient.PostLogin(&core.PostLogin{
+	// 	Username: "system",
+	// 	Password: "HLgd@S123",
+	// })
+	// if err != nil {
+	// 	panic(err)
+	// }
+
+	// client.Token = login.Token
+
+	token, err := gdassdk.GetToken("https://172.38.30.192:8003", "system", "HLgd@S123")
 	if err != nil {
 		panic(err)
 	}
+	fmt.Println(token)
 
-	client.Token = login.Token
+	s := gdassdk.NewService("https://172.38.30.192:8003", token)
 
-	nClient := services.NewNodeService(client)
-	fmt.Println(client.Token)
-	nodes, err := nClient.GetNode()
+	fmt.Println(s.Client.Token)
+
+	nodes, err := s.Node.GetNode()
 	if err != nil {
 		panic(err)
 	}

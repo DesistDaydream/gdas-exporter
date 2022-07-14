@@ -25,9 +25,10 @@ type RequestOptions struct {
 	Data   map[string]string
 }
 
-func NewClient(prefix string) *Client {
+func NewClient(prefix string, token string) *Client {
 	return &Client{
 		Prefix: prefix,
+		Token:  token,
 	}
 }
 
@@ -67,7 +68,6 @@ func (c *Client) request(endpoint string, options *RequestOptions) ([]byte, erro
 	req.Header.Add("X-Auth-Token", c.Token)
 	req.Header.Set("Referer", fmt.Sprintf("%v/gdas", c.Prefix))
 	req.Header.Set("stime", fmt.Sprintf("%v", time.Now().UnixNano()/1e6))
-	// login 接口只需要 referer、stime 这两个请求头即可
 	req.Header.Set("nonce", randString)
 	req.Header.Set("signature", signatureSha)
 
