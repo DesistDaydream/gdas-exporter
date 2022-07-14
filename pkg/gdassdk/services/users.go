@@ -1,8 +1,6 @@
 package services
 
 import (
-	"fmt"
-
 	core "github.com/DesistDaydream/gdas-exporter/pkg/gdassdk/core/v1"
 )
 
@@ -25,8 +23,6 @@ func (n *UsersService) GetUsers() (*core.Users, error) {
 	if err != nil {
 		return nil, err
 	}
-
-	fmt.Println(data)
 
 	return &data, nil
 }

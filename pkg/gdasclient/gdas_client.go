@@ -67,6 +67,6 @@ func (o *GdasOpts) AddFlag() {
 	pflag.StringVarP(&o.Username, "gdas-user", "u", "system", "gdas username")
 	pflag.StringVarP(&o.Password, "gdas-pass", "p", "", "gdas password")
 	pflag.IntVar(&o.Concurrency, "concurrent", 10, "Number of concurrent requests during collection.")
-	pflag.DurationVar(&o.Timeout, "timeout", time.Millisecond*1600, "Timeout on HTTP requests to the Gads API.")
+	pflag.DurationVar(&o.Timeout, "timeout", time.Second*60, "Timeout on HTTP requests to the Gads API.")
 	pflag.BoolVar(&o.Insecure, "insecure", true, "Disable TLS host verification.")
 }

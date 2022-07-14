@@ -13,6 +13,60 @@ type NodeListData struct {
 	DamName string  `json:"damName"`
 }
 
+type NodeCaches struct {
+	Result          string `json:"result"`
+	TotalCacheSize  int64  `json:"totalCacheSize"`
+	UnUsedCacheSize int64  `json:"unUsedCacheSize"`
+	UsedCacheSize   int64  `json:"usedCacheSize"`
+}
+
+type NodeDas struct {
+	Result string   `json:"result"`
+	DaList []DaList `json:"daList"`
+}
+type DriveSerialList struct {
+	DriveNo     int    `json:"driveNo"`
+	DriveSerial string `json:"driveSerial"`
+}
+type DaList struct {
+	DaNo              int    `json:"da_no"`
+	Name              string `json:"name"`
+	ChangerNum        int    `json:"changer_num"`
+	DriveNum          int    `json:"drive_num"`
+	SlotNum           int    `json:"slot_num"`
+	MagazineUsedCount int    `json:"magazineUsedCount"`
+	MagazineExcpCount int    `json:"magazineExcpCount"`
+	MagazineFreeCount int    `json:"magazineFreeCount"`
+	DaStatus          int    `json:"daStatus"`
+	IP                string `json:"ip"`
+	// ChangerSmartInfo 机械手的smart信息(编号、状态、使用百分比)
+	ChangerSmartInfo []ChangerSmartInfo `json:"changerSmartInfo"`
+	// DriveSmartInfo 光驱的smart信息(编号、状态、使用百分比)
+	DriveSmartInfo  []DriveSmartInfo  `json:"driveSmartInfo"`
+	ChangerSerial   string            `json:"changerSerial"`
+	DriveSerialList []DriveSerialList `json:"driveSerialList"`
+}
+
+// 盘库中每个机械手的信息
+type ChangerSmartInfo struct {
+	// UnitNo 机械手号，默认为0
+	UnitNo int `json:"unitNo"`
+	// UsedPercent 机械手使用百分比
+	UsedPercent int `json:"usedPercent"`
+	// Status 机械手状态
+	Status int `json:"status"`
+}
+
+// 盘库中每个光驱的信息
+type DriveSmartInfo struct {
+	// UnitNo 光驱号，默认为0
+	UnitNo int `json:"unitNo"`
+	// UsedPercent 光驱使用百分比
+	UsedPercent int `json:"usedPercent"`
+	// Status 光驱状态
+	Status int `json:"status"`
+}
+
 type Authorize struct {
 	Result               string `json:"result"`
 	RegisterTimeMillis   string `json:"registerTimeMillis"`
