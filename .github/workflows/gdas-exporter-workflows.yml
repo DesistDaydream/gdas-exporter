@@ -1,8 +1,8 @@
 name: gdas-exporter
 on:
-  # push:
-  #   branches:
-  #     - main
+  push:
+    branches:
+      - main
   workflow_dispatch: {}
 jobs:
   # 生成镜像 Tag
