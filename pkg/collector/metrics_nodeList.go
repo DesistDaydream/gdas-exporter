@@ -3,6 +3,7 @@ package collector
 import (
 	"fmt"
 	"strconv"
+	"sync"
 
 	"github.com/DesistDaydream/gdas-exporter/pkg/gdasclient"
 	"github.com/DesistDaydream/gdas-exporter/pkg/scraper"
@@ -109,9 +110,7 @@ func (ScrapeNodeList) Help() string {
 // Scrape 从客户端采集数据，并将其作为 Metric 通过 channel(通道) 发送。主要就是采集 Gdas 集群信息的具体行为。
 // 该方法用于为 ScrapeNodeList 结构体实现 Scraper 接口
 func (ScrapeNodeList) Scrape(client *gdasclient.GdasClient, ch chan<- prometheus.Metric) (err error) {
-	var (
-		nodeIPList []string
-	)
+	var nodeIPList []string
 
 	// #############################################
 	// ####### 获取分布式节点信息,即node概况 #######
@@ -135,123 +134,136 @@ func (ScrapeNodeList) Scrape(client *gdasclient.GdasClient, ch chan<- prometheus
 	// 集群中节点总数
 	ch <- prometheus.MustNewConstMetric(NodeTotalCount, prometheus.GaugeValue, float64(len(nodeData.NodeList)))
 
+	var wg sync.WaitGroup
+	defer wg.Wait()
+
+	// 用来控制并发数量
+	concurrencyControl := make(chan bool, client.GetConcurrency())
+
 	for index, nodeIP := range nodeIPList {
-		// 获取节点的状态
-		ch <- prometheus.MustNewConstMetric(NodeStatus, prometheus.GaugeValue, float64(nodeData.NodeList[index].Status),
-			nodeData.NodeList[index].DamName,
-			nodeIP,
-		)
+		concurrencyControl <- true
+		wg.Add(1)
 
-		// ################################################
-		// ####### 循环每个节点，逐一获取节点的缓存数据 ######
-		// ################################################
-		cacheData, err := client.Services.Node.GetNodeCaches(nodeIP)
-		if err != nil {
-			logrus.Errorf("获取节点缓存失败:%v", err)
-			return err
-		} else if nodeData == nil {
-			return fmt.Errorf("获取到的节点缓存为空")
-		}
-
-		//节点总缓存容量
-		ch <- prometheus.MustNewConstMetric(NodeTotalCacheSize, prometheus.GaugeValue, float64(cacheData.TotalCacheSize),
-			nodeData.NodeList[index].DamName,
-			nodeIP,
-		)
-		//节点已用缓存容量
-		ch <- prometheus.MustNewConstMetric(NodeUsedCacheSize, prometheus.GaugeValue, float64(cacheData.UsedCacheSize),
-			nodeData.NodeList[index].DamName,
-			nodeIP,
-		)
-		//节点未用缓存容量
-		ch <- prometheus.MustNewConstMetric(NodeUnusedCacheSize, prometheus.GaugeValue, float64(cacheData.UnUsedCacheSize),
-			nodeData.NodeList[index].DamName,
-			nodeIP,
-		)
-
-		// ################################################
-		// #### 循环每个节点，逐一获取节点下每个盘库的信息 ####
-		// ################################################
-		nodeDasData, err := client.Services.Node.GetNodeDas(nodeIP)
-		if err != nil {
-			logrus.Errorf("获取节点盘库失败:%v", err)
-			return err
-		} else if nodeData == nil {
-			return fmt.Errorf("获取到的节点盘库为空")
-		}
-		// 每个节点下有多个盘库，所以循环每个盘库以获取指标
-		for j := 0; j < len(nodeDasData.DaList); j++ {
-			// 盘库中已用盘匣数量
-			ch <- prometheus.MustNewConstMetric(magazineUsedCount, prometheus.GaugeValue, float64(nodeDasData.DaList[j].MagazineUsedCount),
+		go func(index int, nodeIP string) error {
+			defer wg.Done()
+			// 获取节点的状态
+			ch <- prometheus.MustNewConstMetric(NodeStatus, prometheus.GaugeValue, float64(nodeData.NodeList[index].Status),
 				nodeData.NodeList[index].DamName,
 				nodeIP,
-				nodeDasData.DaList[j].Name,
-				strconv.Itoa(nodeDasData.DaList[j].DaNo),
-			)
-			// 盘库中未用盘匣数量
-			ch <- prometheus.MustNewConstMetric(magazineFreeCount, prometheus.GaugeValue, float64(nodeDasData.DaList[j].MagazineFreeCount),
-				nodeData.NodeList[index].DamName,
-				nodeIP,
-				nodeDasData.DaList[j].Name,
-				strconv.Itoa(nodeDasData.DaList[j].DaNo),
-			)
-			// 盘库中异常盘匣数量
-			ch <- prometheus.MustNewConstMetric(magazineExcpCount, prometheus.GaugeValue, float64(nodeDasData.DaList[j].MagazineExcpCount),
-				nodeData.NodeList[index].DamName,
-				nodeIP,
-				nodeDasData.DaList[j].Name,
-				strconv.Itoa(nodeDasData.DaList[j].DaNo),
 			)
 
-			// 循环盘库下每个机械手，以获取指标
-			for k := 0; k < len(nodeDasData.DaList[j].ChangerSmartInfo); k++ {
-				// 机械手状态
-				ch <- prometheus.MustNewConstMetric(changerStatus, prometheus.GaugeValue, float64(nodeDasData.DaList[j].ChangerSmartInfo[k].Status),
-					nodeData.NodeList[index].DamName,
-					nodeIP,
-					nodeDasData.DaList[j].Name,
-					strconv.Itoa(nodeDasData.DaList[j].DaNo),
-					nodeDasData.DaList[j].ChangerSerial,
-					// strconv.Itoa(status.DaList[j].ChangerSmartInfo[k].UnitNo),
-				)
-				// 机械手使用百分比
-				ch <- prometheus.MustNewConstMetric(changerUsedPercent, prometheus.GaugeValue, float64(nodeDasData.DaList[j].ChangerSmartInfo[k].UsedPercent),
-					nodeData.NodeList[index].DamName,
-					nodeIP,
-					nodeDasData.DaList[j].Name,
-					strconv.Itoa(nodeDasData.DaList[j].DaNo),
-					nodeDasData.DaList[j].ChangerSerial,
-					// strconv.Itoa(status.DaList[j].ChangerSmartInfo[k].UnitNo),
-				)
+			// ################################################
+			// ####### 循环每个节点，逐一获取节点的缓存数据 ######
+			// ################################################
+			cacheData, err := client.Services.Node.GetNodeCaches(nodeIP)
+			if err != nil {
+				logrus.Errorf("获取【%v】节点缓存失败:%v", nodeIP, err)
+				return err
+			} else if nodeData == nil {
+				return fmt.Errorf("获取到的【%v】节点缓存为空", nodeIP)
 			}
-			// 循环盘库下每个光驱，以获取指标
-			// 判断一下与光驱有关的另一个数组中的元素是否不为空
-			if len(nodeDasData.DaList[j].DriveSerialList) > 0 {
-				for l := 0; l < len(nodeDasData.DaList[j].DriveSmartInfo); l++ {
-					// 光驱状态
-					ch <- prometheus.MustNewConstMetric(driveStatus, prometheus.GaugeValue, float64(nodeDasData.DaList[j].DriveSmartInfo[l].Status),
+
+			//节点总缓存容量
+			ch <- prometheus.MustNewConstMetric(NodeTotalCacheSize, prometheus.GaugeValue, float64(cacheData.TotalCacheSize),
+				nodeData.NodeList[index].DamName,
+				nodeIP,
+			)
+			//节点已用缓存容量
+			ch <- prometheus.MustNewConstMetric(NodeUsedCacheSize, prometheus.GaugeValue, float64(cacheData.UsedCacheSize),
+				nodeData.NodeList[index].DamName,
+				nodeIP,
+			)
+			//节点未用缓存容量
+			ch <- prometheus.MustNewConstMetric(NodeUnusedCacheSize, prometheus.GaugeValue, float64(cacheData.UnUsedCacheSize),
+				nodeData.NodeList[index].DamName,
+				nodeIP,
+			)
+
+			// ################################################
+			// #### 循环每个节点，逐一获取节点下每个盘库的信息 ####
+			// ################################################
+			nodeDasData, err := client.Services.Node.GetNodeDas(nodeIP)
+			if err != nil {
+				logrus.Errorf("获取节点盘库失败:%v", err)
+				return err
+			} else if nodeData == nil {
+				return fmt.Errorf("获取到的节点盘库为空")
+			}
+			// 每个节点下有多个盘库，所以循环每个盘库以获取指标
+			for j := 0; j < len(nodeDasData.DaList); j++ {
+				// 盘库中已用盘匣数量
+				ch <- prometheus.MustNewConstMetric(magazineUsedCount, prometheus.GaugeValue, float64(nodeDasData.DaList[j].MagazineUsedCount),
+					nodeData.NodeList[index].DamName,
+					nodeIP,
+					nodeDasData.DaList[j].Name,
+					strconv.Itoa(nodeDasData.DaList[j].DaNo),
+				)
+				// 盘库中未用盘匣数量
+				ch <- prometheus.MustNewConstMetric(magazineFreeCount, prometheus.GaugeValue, float64(nodeDasData.DaList[j].MagazineFreeCount),
+					nodeData.NodeList[index].DamName,
+					nodeIP,
+					nodeDasData.DaList[j].Name,
+					strconv.Itoa(nodeDasData.DaList[j].DaNo),
+				)
+				// 盘库中异常盘匣数量
+				ch <- prometheus.MustNewConstMetric(magazineExcpCount, prometheus.GaugeValue, float64(nodeDasData.DaList[j].MagazineExcpCount),
+					nodeData.NodeList[index].DamName,
+					nodeIP,
+					nodeDasData.DaList[j].Name,
+					strconv.Itoa(nodeDasData.DaList[j].DaNo),
+				)
+
+				// 循环盘库下每个机械手，以获取指标
+				for k := 0; k < len(nodeDasData.DaList[j].ChangerSmartInfo); k++ {
+					// 机械手状态
+					ch <- prometheus.MustNewConstMetric(changerStatus, prometheus.GaugeValue, float64(nodeDasData.DaList[j].ChangerSmartInfo[k].Status),
 						nodeData.NodeList[index].DamName,
 						nodeIP,
 						nodeDasData.DaList[j].Name,
 						strconv.Itoa(nodeDasData.DaList[j].DaNo),
-						nodeDasData.DaList[j].DriveSerialList[l].DriveSerial,
-						// strconv.Itoa(status.DaList[j].DriveSmartInfo[l].UnitNo),
+						nodeDasData.DaList[j].ChangerSerial,
+						// strconv.Itoa(status.DaList[j].ChangerSmartInfo[k].UnitNo),
 					)
-					// 光驱使用百分比
-					ch <- prometheus.MustNewConstMetric(driveUsedPercent, prometheus.GaugeValue, float64(nodeDasData.DaList[j].DriveSmartInfo[l].UsedPercent),
+					// 机械手使用百分比
+					ch <- prometheus.MustNewConstMetric(changerUsedPercent, prometheus.GaugeValue, float64(nodeDasData.DaList[j].ChangerSmartInfo[k].UsedPercent),
 						nodeData.NodeList[index].DamName,
 						nodeIP,
 						nodeDasData.DaList[j].Name,
 						strconv.Itoa(nodeDasData.DaList[j].DaNo),
-						nodeDasData.DaList[j].DriveSerialList[l].DriveSerial,
-						// strconv.Itoa(status.DaList[j].DriveSmartInfo[l].UnitNo),
+						nodeDasData.DaList[j].ChangerSerial,
+						// strconv.Itoa(status.DaList[j].ChangerSmartInfo[k].UnitNo),
 					)
 				}
-			} else {
-				logrus.Error("从 API 获取光驱指标异常,DriveSerialList 数组元素不大于0")
+				// 循环盘库下每个光驱，以获取指标
+				// 判断一下与光驱有关的另一个数组中的元素是否不为空
+				if len(nodeDasData.DaList[j].DriveSerialList) > 0 {
+					for l := 0; l < len(nodeDasData.DaList[j].DriveSmartInfo); l++ {
+						// 光驱状态
+						ch <- prometheus.MustNewConstMetric(driveStatus, prometheus.GaugeValue, float64(nodeDasData.DaList[j].DriveSmartInfo[l].Status),
+							nodeData.NodeList[index].DamName,
+							nodeIP,
+							nodeDasData.DaList[j].Name,
+							strconv.Itoa(nodeDasData.DaList[j].DaNo),
+							nodeDasData.DaList[j].DriveSerialList[l].DriveSerial,
+							// strconv.Itoa(status.DaList[j].DriveSmartInfo[l].UnitNo),
+						)
+						// 光驱使用百分比
+						ch <- prometheus.MustNewConstMetric(driveUsedPercent, prometheus.GaugeValue, float64(nodeDasData.DaList[j].DriveSmartInfo[l].UsedPercent),
+							nodeData.NodeList[index].DamName,
+							nodeIP,
+							nodeDasData.DaList[j].Name,
+							strconv.Itoa(nodeDasData.DaList[j].DaNo),
+							nodeDasData.DaList[j].DriveSerialList[l].DriveSerial,
+							// strconv.Itoa(status.DaList[j].DriveSmartInfo[l].UnitNo),
+						)
+					}
+				} else {
+					logrus.Error("从 API 获取光驱指标异常,DriveSerialList 数组元素不大于0")
+				}
 			}
-		}
-
+			<-concurrencyControl
+			return nil
+		}(index, nodeIP)
 	}
 	return nil
 }
