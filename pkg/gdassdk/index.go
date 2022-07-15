@@ -96,6 +96,8 @@ type Services struct {
 	Auth      *services.AuthService
 	Magazines *services.MagazinesService
 	Users     *services.UsersService
+	Pools     *services.PoolsService
+	Das       *services.DasService
 }
 
 // NewServices create Client for external use
@@ -111,4 +113,6 @@ func (s *Services) Init(prefix string, token string, timeout time.Duration) {
 	s.Auth = services.NewAuthService(s.Client)
 	s.Magazines = services.NewMagazinesService(s.Client)
 	s.Users = services.NewUsersService(s.Client)
+	s.Pools = services.NewPoolsService(s.Client)
+	s.Das = services.NewDasService(s.Client)
 }

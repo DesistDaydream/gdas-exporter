@@ -76,7 +76,7 @@ func (c *Client) request(endpoint string, options *RequestOptions) ([]byte, erro
 	req.Header.Set("Referer", fmt.Sprintf("%v/gdas", c.Prefix))
 	req.URL.RawQuery = options.RawQuery
 
-	logrus.WithField("url", req.URL).Debug("URL检查")
+	logrus.WithField("url", req.URL).Debug("检查 URL")
 
 	// requestDump, err := httputil.DumpRequest(req, true)
 	// if err != nil {

@@ -1,18 +1,18 @@
 package v1
 
-// NodeLists 节点信息
+// NodeList 分布式节点信息
 type NodeList struct {
 	Result   string         `json:"result"`
 	NodeList []NodeListData `json:"nodeList"`
 }
 
-// NodeList 每个节点的信息
 type NodeListData struct {
 	IP      string  `json:"ip"`
 	Status  float64 `json:"status"`
 	DamName string  `json:"damName"`
 }
 
+// 缓存容量
 type NodeCaches struct {
 	Result          string `json:"result"`
 	TotalCacheSize  int64  `json:"totalCacheSize"`
@@ -20,14 +20,12 @@ type NodeCaches struct {
 	UsedCacheSize   int64  `json:"usedCacheSize"`
 }
 
+// 节点盘库列表
 type NodeDas struct {
 	Result string   `json:"result"`
 	DaList []DaList `json:"daList"`
 }
-type DriveSerialList struct {
-	DriveNo     int    `json:"driveNo"`
-	DriveSerial string `json:"driveSerial"`
-}
+
 type DaList struct {
 	DaNo              int    `json:"da_no"`
 	Name              string `json:"name"`
@@ -45,6 +43,11 @@ type DaList struct {
 	DriveSmartInfo  []DriveSmartInfo  `json:"driveSmartInfo"`
 	ChangerSerial   string            `json:"changerSerial"`
 	DriveSerialList []DriveSerialList `json:"driveSerialList"`
+}
+
+type DriveSerialList struct {
+	DriveNo     int    `json:"driveNo"`
+	DriveSerial string `json:"driveSerial"`
 }
 
 // 盘库中每个机械手的信息
@@ -67,6 +70,7 @@ type DriveSmartInfo struct {
 	Status int `json:"status"`
 }
 
+// 授权
 type Authorize struct {
 	Result               string `json:"result"`
 	RegisterTimeMillis   string `json:"registerTimeMillis"`
@@ -75,11 +79,13 @@ type Authorize struct {
 	RegisterMgzCount     string `json:"registerMgzCount"`
 }
 
+// 盘匣列表
 type Magazines struct {
 	Result          string        `json:"result"`
 	Rfid            []Rfid        `json:"rfid"`
 	SonyIESlotsList []interface{} `json:"SonyIESlotsList"`
 }
+
 type Rfid struct {
 	Rfid     string   `json:"rfid"`
 	Barcode  string   `json:"barcode"`
@@ -110,6 +116,7 @@ type Totalspace struct {
 	TotalSlotCount      int    `json:"totalSlotCount"`
 }
 
+// 用户信息
 type Users struct {
 	Result   string     `json:"result"`
 	ResCount int        `json:"res_count"`
@@ -121,4 +128,56 @@ type UserList struct {
 	Ak       string `json:"ak"`
 	Sk       string `json:"sk"`
 	Active   bool   `json:"active,omitempty"`
+}
+
+// 所有盘匣组信息
+type Pools struct {
+	Result   string      `json:"result"`
+	ResCount int         `json:"res_count"`
+	Pools    []PoolsData `json:"pools"`
+}
+
+type PoolsData struct {
+	PoolName           string `json:"pool_name"`
+	Type               string `json:"type"`
+	PoolRaidLvl        int    `json:"pool_raidLvl"`
+	RfidCount          int    `json:"rfid_count,omitempty"`
+	PoolTotalSpace     int64  `json:"pool_total_space"`
+	PoolAvailableSpace int64  `json:"pool_available_space"`
+	PoolSts            int    `json:" pool_sts,omitempty"`
+	PoolCanDelFlag     string `json:"poolCanDel_flag"`
+	User               string `json:"user"`
+	AutoAddMgz         bool   `json:"autoAddMgz"`
+	DefaultMgz         bool   `json:"defaultMgz"`
+	PoolOperation      string `json:"pool_operation,omitempty"`
+	Duplicate          int    `json:"duplicate"`
+	RfidCoUnt          int    `json:"rfid_co unt,omitempty"`
+	PoolOperaTion      string `json:"pool_opera tion,omitempty"`
+}
+
+// 全局盘库信息
+type Das struct {
+	Result string   `json:"result"`
+	DaInfo []DaInfo `json:"daInfo"`
+}
+
+type DaInfo struct {
+	// DamName 盘库所在节点名称
+	DamName string `json:"damName"`
+	// ChangerSerialNumber ???盘库序列号????这不是机械手的信息么???
+	ChangerSerialNumber string `json:"changerSerialNumber"`
+	// IP 盘库所在节点 IP
+	IP string `json:"ip"`
+	// DaName 盘库型号
+	DaName string `json:"daName"`
+	// DaStatus 盘库状态。0 正常，-203 盘匣弹出中，-210 仓架解锁中，-202 系统繁忙，-102 断开连接，-100和-103 识别中
+	DaStatus int `json:"daStatus"`
+	// DaNo ！！！未知！！！好像每个节点第一个盘库的号就是0，所以看到的就都是0
+	DaNo int `json:"daNo"`
+	// DaVendor 厂商信息
+	DaVendor string `json:"daVendor"`
+	// Offline 盘库注册、断开状态。0 断开，1 已注册
+	Offline int `json:"offline"`
+	// SlotCount 槽位总数
+	SlotCount int `json:"slotCount"`
 }

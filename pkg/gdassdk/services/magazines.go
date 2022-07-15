@@ -12,7 +12,7 @@ func NewMagazinesService(client *core.Client) *MagazinesService {
 	}
 }
 
-// 查询盘匣列表
+// GetMagazines 11.查询盘匣列表
 func (n *MagazinesService) GetMagazines() (*core.Magazines, error) {
 	var data core.Magazines
 	endpoint := "magazines"
@@ -26,7 +26,7 @@ func (n *MagazinesService) GetMagazines() (*core.Magazines, error) {
 	return &data, nil
 }
 
-// 获取全局存储空间信息
+// GetTotalspace 28.获取全局存储空间信息
 func (n *MagazinesService) GetTotalspace() (*core.Totalspace, error) {
 	var data core.Totalspace
 	endpoint := "totalspace"

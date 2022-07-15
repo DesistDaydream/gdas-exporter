@@ -13,6 +13,8 @@ func NewUsersService(client *core.Client) *UsersService {
 		client: client,
 	}
 }
+
+// GetUsers 23.查询用户
 func (n *UsersService) GetUsers() (*core.Users, error) {
 	var data core.Users
 	endpoint := "users"

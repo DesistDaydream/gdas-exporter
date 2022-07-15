@@ -2,20 +2,20 @@ package services
 
 import core "github.com/DesistDaydream/gdas-exporter/pkg/gdassdk/core/v1"
 
-type AuthService struct {
+type DasService struct {
 	client *core.Client
 }
 
-func NewAuthService(client *core.Client) *AuthService {
-	return &AuthService{
+func NewDasService(client *core.Client) *DasService {
+	return &DasService{
 		client: client,
 	}
 }
 
-// GetAuthorize 36.查询授权
-func (n *AuthService) GetAuthorize() (*core.Authorize, error) {
-	var data core.Authorize
-	endpoint := "authorize"
+// GetDas 9.获取全局盘库信息
+func (n *DasService) GetDas() (*core.Das, error) {
+	var data core.Das
+	endpoint := "das"
 	_, err := n.client.RequestObj(endpoint, &data, &core.RequestOptions{
 		Method: "GET",
 	})

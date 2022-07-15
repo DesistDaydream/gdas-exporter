@@ -24,6 +24,8 @@ var scrapers = map[scraper.Scraper]bool{
 	collector.ScrapeNodeList{}:   true,
 	collector.ScrapeUser{}:       true,
 	collector.ScrapeTotalspace{}: true,
+	collector.ScrapePools{}:      true,
+	collector.ScrapeDas{}:        true,
 }
 
 // DumpStacks is
