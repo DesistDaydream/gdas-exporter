@@ -25,7 +25,7 @@ type Client struct {
 
 type RequestOptions struct {
 	Method   string
-	Data     map[string]string
+	ReqBody  map[string]string
 	RawQuery string
 }
 
@@ -48,20 +48,20 @@ func (c *Client) request(endpoint string, options *RequestOptions) ([]byte, erro
 	randString, signatureSha := GenerateSign(c.Token)
 
 	var (
-		rb  *bytes.Buffer
-		req *http.Request
-		err error
+		reqBody *bytes.Buffer
+		req     *http.Request
+		err     error
 	)
 
-	if len(options.Data) > 0 {
-		requestBody, err := json.Marshal(options.Data)
+	if len(options.ReqBody) > 0 {
+		requestBody, err := json.Marshal(options.ReqBody)
 		if err != nil {
 			return nil, err
 		}
-		rb = bytes.NewBuffer(requestBody)
+		reqBody = bytes.NewBuffer(requestBody)
 	}
-	if rb != nil {
-		req, err = http.NewRequest(method, url, rb)
+	if reqBody != nil {
+		req, err = http.NewRequest(method, url, reqBody)
 	} else {
 		req, err = http.NewRequest(method, url, nil)
 	}
